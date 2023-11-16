@@ -1,10 +1,23 @@
 package com.example.expensemanager
 
+import android.app.AlertDialog
 import android.os.Bundle
+import android.text.TextUtils
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -28,32 +41,141 @@ class DashBoardFragment : Fragment() {
             param2 = it.getString(ARG_PARAM2)
         }
     }
+    private lateinit var fab_main_btn: FloatingActionButton
+    private lateinit var fab_income_btn: FloatingActionButton
+    private lateinit var fab_expense_btn: FloatingActionButton
+
+    private lateinit var fab_income_txt:TextView
+    private lateinit var fab_expense_txt:TextView
+
+    //boolean
+
+    private var isOpen =false
+
+    //animation
+
+    private lateinit var fade_open:Animation
+    private lateinit var fade_close:Animation
+
+
+    //FireBase Database
+
+    private lateinit var mAuth: FirebaseAuth
+    private lateinit var mIncomeDatabase:DatabaseReference
+    private lateinit var mExpenseDatabase:DatabaseReference
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_dash_board, container, false)
+        val myview:View=inflater.inflate(R.layout.fragment_dash_board, container, false)
+
+        mAuth=FirebaseAuth.getInstance()
+        val mUser: FirebaseUser? =mAuth.currentUser
+        val uid: String? = mUser?.uid
+        if (uid != null) {
+            mIncomeDatabase = FirebaseDatabase.getInstance().getReference().child("IncomeData").child(uid)
+        }
+        if (uid != null) {
+            mExpenseDatabase = FirebaseDatabase.getInstance().getReference().child("ExpenseData").child(uid)
+        }
+
+
+
+        //connnect floating button
+        fab_main_btn=myview.findViewById(R.id.fb_main_plus_btn)
+        fab_income_btn=myview.findViewById(R.id.income_Ft_btn)
+        fab_expense_btn=myview.findViewById(R.id.expense_ft_button)
+
+        //connect floating text
+        fab_income_txt=myview.findViewById(R.id.income_ft_text)
+        fab_expense_txt=myview.findViewById(R.id.expense_ft_text)
+
+        fade_open=AnimationUtils.loadAnimation(activity,R.anim.fade_open)
+        fade_close=AnimationUtils.loadAnimation(activity,R.anim.fade_close)
+
+        fab_main_btn.setOnClickListener{
+            addData()
+            if (isOpen){
+                fab_income_btn.startAnimation(fade_close)
+                fab_expense_btn.startAnimation(fade_close)
+                fab_income_btn.isEnabled = false
+                fab_expense_btn.isEnabled = false
+                fab_income_txt.startAnimation(fade_close)
+                fab_expense_txt.startAnimation(fade_close)
+                fab_income_txt.isEnabled = false
+                fab_expense_txt.isEnabled = false
+                isOpen=false
+            }else{
+                fab_income_btn.startAnimation(fade_open)
+                fab_expense_btn.startAnimation(fade_open)
+                fab_income_btn.isEnabled = true
+                fab_expense_btn.isEnabled = true
+                fab_income_txt.startAnimation(fade_open)
+                fab_expense_txt.startAnimation(fade_open)
+                fab_income_txt.isEnabled = true
+                fab_expense_txt.isEnabled = true
+                isOpen=false
+            }
+        }
+
+        return myview
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment DashBoardFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            DashBoardFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+
+    private fun addData(){
+    //Fab Button
+        fab_income_btn.setOnClickListener{
+        incomeDataInsert()
+        }
+        fab_expense_btn.setOnClickListener{
+
+        }
+    }
+
+    fun incomeDataInsert(){
+        val mydialog:AlertDialog.Builder=AlertDialog.Builder(activity)
+        val inflater:LayoutInflater=LayoutInflater.from(activity)
+
+        val myview:View=inflater.inflate(R.layout.custome_layout_for_insertdata,null)
+        mydialog.setView(myview)
+
+        val dialog:AlertDialog=mydialog.create()
+
+
+        val edtAmount:EditText=myview.findViewById(R.id.ammount_edt)
+        val edtType:EditText=myview.findViewById(R.id.type_edt)
+        val edtText:EditText=myview.findViewById(R.id.type_edt)
+        val edtNote:EditText=myview.findViewById(R.id.note_edt)
+        val btnSave:Button=myview.findViewById(R.id.btnSave)
+        val btnCancel:Button=myview.findViewById(R.id.btnCancle)
+
+
+        btnSave.setOnClickListener{
+            var type:String=edtType.text.toString().trim()
+            var ammount:String=edtAmount.text.toString().trim()
+            var note:String=edtNote.text.toString().trim()
+
+            if (TextUtils.isEmpty(type)){
+                edtType.setError("Mandatory to Fill")
+                return@setOnClickListener
             }
+            if (TextUtils.isEmpty(ammount)){
+                edtAmount.setError("Mandatory to Fill")
+                return@setOnClickListener
+            }
+
+            var ourammountint:Int=ammount.toInt()
+            if (TextUtils.isEmpty(note)) {
+                edtNote.setError("Mandatory to Fill")
+                return@setOnClickListener
+            }
+
+        }
+        btnCancel.setOnClickListener{
+            dialog.dismiss()
+        }
+        dialog.show()
     }
 }
