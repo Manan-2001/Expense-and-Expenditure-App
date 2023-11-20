@@ -1,53 +1,42 @@
 package com.example.expensemanager.Model
 
-class Data {
-    private var amount: Int = 0
-    private var type: String? = null
-    private var note: String? = null
-    private var id: String? = null
-    private var date: String? = null
+data class Data (
+    var amount: Int = 0,
+    var type: String? = null,
+    var note: String? = null,
+    var id: String? = null,
+    var date: String? = null
+)
 
-    constructor(amount: Int, type: String?, note: String?, id: String?, date: String?) {
-        this.amount = amount
-        this.type = type
-        this.note = note
-        this.id = id
-        this.date = date
-    }
+package com.example.expensemanager.Model
 
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 
-    fun setAmount(amount: Int){
-        this.amount=amount
-    }
-    fun setType(Type: String?){
-        type=Type
-    }
-    fun setId(Id: String?){
-        id=Id
-    }
-    fun setNote(Note: String?){
-        note=Note
-    }
-    fun setDate(Date: String?){
-        date=Date
-    }
+data class Data(
+    var amount: Int = 0,
+    var type: String? = null,
+    var note: String? = null,
+    var id: String? = null,
+    var date: String? = null
+)
 
-    fun getAmount(): Int {
-        return amount
-    }
-    fun getType(): String? {
-        return type
-    }
-    fun getNote(): String? {
-        return note
-    }
-    fun getId(): String? {
-        return id
-    }
-    fun getDate(): String? {
-        return date
-    }
+// Extension function to save Data object to Firebase
+fun Data.saveToFirebase() {
+    val database: FirebaseDatabase = FirebaseDatabase.getInstance()
+    val reference: DatabaseReference = database.getReference("expenses")
 
+    val dataId = reference.push().key ?: return // Generate a unique key for the data
+    id = dataId // Assign the generated key to the object
 
+    // Create a map of data to be saved
+    val dataMap = HashMap<String, Any?>()
+    dataMap["amount"] = amount
+    dataMap["type"] = type
+    dataMap["note"] = note
+    dataMap["id"] = id
+    dataMap["date"] = date
 
+    // Save data to Firebase under "expenses" node with the generated key
+    reference.child(dataId).setValue(dataMap)
 }

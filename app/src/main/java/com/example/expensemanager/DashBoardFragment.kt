@@ -12,12 +12,16 @@ import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
+import com.example.expensemanager.Model.Data
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import java.util.Date
+import java.text.DateFormat
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -146,31 +150,36 @@ class DashBoardFragment : Fragment() {
 
         val edtAmount:EditText=myview.findViewById(R.id.ammount_edt)
         val edtType:EditText=myview.findViewById(R.id.type_edt)
-        val edtText:EditText=myview.findViewById(R.id.type_edt)
         val edtNote:EditText=myview.findViewById(R.id.note_edt)
         val btnSave:Button=myview.findViewById(R.id.btnSave)
         val btnCancel:Button=myview.findViewById(R.id.btnCancle)
 
 
         btnSave.setOnClickListener{
-            var type:String=edtType.text.toString().trim()
-            var ammount:String=edtAmount.text.toString().trim()
-            var note:String=edtNote.text.toString().trim()
+            var type:String=edtType.text.toString()
+            var ammount:String=edtAmount.text.toString()
+            var note:String=edtNote.text.toString()
 
-            if (TextUtils.isEmpty(type)){
-                edtType.setError("Mandatory to Fill")
-                return@setOnClickListener
+            if (type.isEmpty()){
+                edtType.error="Mandatory to Fill"
             }
-            if (TextUtils.isEmpty(ammount)){
-                edtAmount.setError("Mandatory to Fill")
-                return@setOnClickListener
+            if (ammount.isEmpty()){
+                edtAmount.error="Mandatory to Fill"
             }
-
             var ourammountint:Int=ammount.toInt()
-            if (TextUtils.isEmpty(note)) {
-                edtNote.setError("Mandatory to Fill")
-                return@setOnClickListener
+
+            if (note.isEmpty()) {
+                edtNote.error="Mandatory to Fill"
+
             }
+            var id =mIncomeDatabase.push().key!!
+            val mDate: String? = DateFormat.getDateInstance().format(Date())
+            val idata=Data(ourammountint, type, note, id, mDate)
+             mIncomeDatabase.child(id).setValue(idata)
+             Toast.makeText(activity,"DATA ADDED",Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+
+
 
         }
         btnCancel.setOnClickListener{

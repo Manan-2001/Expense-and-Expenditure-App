@@ -22,9 +22,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         mAuth= FirebaseAuth.getInstance()
-        if (mAuth!=null){
-            startActivity(Intent(this@MainActivity,HomeActivity::class.java))
-        }
+
         loginDetails()
     }
     private fun loginDetails(){
